@@ -100,9 +100,6 @@ defmodule ExTypesense do
   defdelegate delete_document_by_id(conn \\ Connection.new(), collection_name, document_id),
     to: ExTypesense.Document
 
-  defdelegate delete_documents_by_query(conn \\ Connection.new(), collection_name, query), to: ExTypesense.Document
-
-
   defdelegate update_document(conn \\ Connection.new(), document), to: ExTypesense.Document
   defdelegate upsert_document(conn \\ Connection.new(), document), to: ExTypesense.Document
 
