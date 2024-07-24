@@ -479,6 +479,58 @@ defmodule ExTypesense.Document do
     do_delete_document(collection_name, document_id)
   end
 
+
+   @doc """
+  Deletes documents in a collection by query.
+
+  > #### [Filter and batch size](https://typesense.org/docs/latest/api/documents.html#delete-by-query) {: .info}
+  >
+  > To delete all documents in a collection, you can use a filter that
+  > matches all documents in your collection. For eg, if you have an
+  > int32 field called popularity in your documents, you can use
+  > `filter_by: "popularity:>0"` to delete all documents. Or if you have a
+  > bool field called `in_stock` in your documents, you can use
+  > `filter_by: "in_stock:[true,false]"` to delete all documents.
+  >
+  > Use the `batch_size` to control the number of documents that should
+  > deleted at a time. A larger value will speed up deletions, but will
+  > impact performance of other operations running on the server.
+  >
+  > Filter parameters can be found here: https://typesense.org/docs/latest/api/search.html#filter-parameters
+
+  ## Examples
+      iex> query = %{
+      ...>   filter_by: "num_employees:>100",
+      ...>   batch_size: 100
+      ...> }
+      iex> ExTypesense.delete_documents_by_query(Employee, query)
+      {:ok, %{}}
+  """
+  @doc since: "0.5.0"
+  @spec delete_documents_by_query(
+          Connection.t(),
+          module() | String.t(),
+          %{
+            filter_by: String.t(),
+            batch_size: integer() | nil
+          }
+        ) ::
+          response()
+  def delete_documents_by_query(conn \\ Connection.new(), collection_name, query)
+
+  def delete_documents_by_query(conn, collection_name, %{filter_by: filter_by} = query)
+      when not is_nil(filter_by) and is_binary(filter_by) and is_atom(collection_name) do
+    collection_name = collection_name.__schema__(:source)
+    path = Path.join([@collections_path, collection_name, @documents_path])
+    HttpClient.request(conn, %{method: :delete, path: path, query: query})
+  end
+
+  def delete_documents_by_query(conn, collection_name, %{filter_by: filter_by} = query)
+      when not is_nil(filter_by) and is_binary(filter_by) and is_binary(collection_name) do
+    path = Path.join([@collections_path, collection_name, @documents_path])
+    HttpClient.request(conn, %{method: :delete, path: path, query: query})
+  end
+
   @deprecated "use do_delete_document/3"
   defp do_delete_document(collection_name, document_id) do
     path =
