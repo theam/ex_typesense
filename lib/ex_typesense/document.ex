@@ -45,13 +45,13 @@ defmodule ExTypesense.Document do
   def get_document(conn \\ Connection.new(), module_name, document_id)
 
   def get_document(conn, module_name, document_id)
-      when is_atom(module_name) and is_integer(document_id) do
+      when is_atom(module_name) do
     collection_name = module_name.__schema__(:source)
     do_get_document(conn, collection_name, document_id)
   end
 
   def get_document(conn, collection_name, document_id)
-      when is_binary(collection_name) and is_integer(document_id) do
+      when is_binary(collection_name) do
     do_get_document(conn, collection_name, document_id)
   end
 
@@ -311,15 +311,15 @@ defmodule ExTypesense.Document do
     collection_name = struct.__struct__.__schema__(:source)
 
     path =
-      Path.join([@collections_path, collection_name, @documents_path, Jason.encode!(struct.id)])
+      Path.join([@collections_path, collection_name, @documents_path, struct.id])
 
     do_index_document(conn, path, :patch, "update", Jason.encode!(struct))
   end
 
   def update_document(conn, document) when is_map(document) do
-    id = String.to_integer(document.id)
+    id = document.id
     collection_name = Map.get(document, :collection_name)
-    path = Path.join([@collections_path, collection_name, @documents_path, Jason.encode!(id)])
+    path = Path.join([@collections_path, collection_name, @documents_path, id])
     do_index_document(conn, path, :patch, "update", Jason.encode!(document))
   end
 
@@ -424,7 +424,7 @@ defmodule ExTypesense.Document do
         @collections_path,
         collection_name,
         @documents_path,
-        Jason.encode!(document_id)
+        document_id
       ])
 
     HttpClient.request(conn, %{method: :delete, path: path})
@@ -538,7 +538,7 @@ defmodule ExTypesense.Document do
         @collections_path,
         collection_name,
         @documents_path,
-        Jason.encode!(document_id)
+        document_id
       ])
 
     HttpClient.run(:delete, path)
